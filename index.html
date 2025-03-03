@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset=utf-8 />
+	<title>Stone Mountain Walk-Up Trail</title>
+	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+	<link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+
+	<style>
+		body {
+			font-family: "Times New Roman";
+			margin: 0;
+			padding: 0;
+			background: "whitesmoke";
+			color: black;
+		}
+
+		h1 {
+			font-family: "Times New Roman";
+			position: absolute;
+			margin-top: 0;
+			top: 10px;
+			left: 45px;
+			font-size: 2em;
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+			padding: 10px 15px;
+			background: rgba(256, 256, 256);
+			border: 1px solid Black;
+			border-radius: 10px;
+			z-index: 800;
+		}
+
+		h2 {
+			font-family: "Times New Roman";
+			letter-spacing: .04em;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+
+		section {
+			position: absolute;
+			bottom: 0;
+			left: 955px;
+			width: 280px;
+			margin: 20px auto;
+			padding: 0 15px;
+			background: rgba(256, 256, 256);
+			border: 1px solid Black;
+			border-radius: 10px;
+			z-index: 800;
+		}
+
+		p {
+			font-family: "Times New Roman";
+			font-size: .9em;
+			line-height: 1.5em;
+		}
+
+		a {
+			color: #683eb5;
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+			color: #00c3ff;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1 >The Stone Mountain Walk-Up Trail</h1>
+
+	<div id='map'></div>
+
+	<section>
+		<h2 >Overview of the trail</h2>
+
+		<p >
+			Located in Atlanta Georgia, the Stone Mountain Walk-Up Trail is a one-mile hike that leads to the summit of Stone Mountain, offering a moderate challenge with over 700 feet elevation gain. The trail features steeper sections near the top, which are marked with yellow blazes. The hike features views of the Atlanta Metro skyline, Stone Mountain Lake, and the Appalachian Mountains on clear days.
+			This hike to the summit can take between 30 minutes to an hour at a moderate pace. However, be cautious on the smooth granite trail, especially when wet or covered in sand or pine needles, as it can become slippery. 
+			<a href="https://stonemountainpark.com/" target="_blank">Learn More About Stone Mountain Park</a>
+		</p>
+
+		<p>
+			The top of Stone Mountain can also be accessed via the “Summit SkyRide.” This high-speed Swiss cable car transports guests more than 825 feet above ground on a half-mile round trip to the top of Stone Mountain. From the top, experience amazing views of the Atlanta skyline, the Appalachian Mountains, and more up to 60 miles away on a clear day.
+			<a href="https://stonemountainpark.com/activity/attractions/summit-skyride/" target="_blank">Learn more about the Summit Skyride</a>
+		</p>
+
+
+		<p style="font-size: 13px;">Map by: Hadrian Biehn</p>
+
+	</section>
+
+	<script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+
+<!--Starting here -->
+    <script src="data/route.js"> </script>
+
+    
+
+	<script>
+
+//options to be used when creating the map
+		var options = {
+			center: [33.806221768367465, -84.14819201606498],
+			zoom: 15
+		}
+
+//creation of the Leaflet map
+		var map = L.map('map', options);
+
+//request to load basemap
+var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+}).addTo(map);
+
+//string content to be inserted into a tooltip
+//		var message = 'Beacon Heights!';
+
+//create a Leaflet marker, centered on the map's center.
+//		L.marker(map.getCenter())
+//			.bindTooltip(message) //bind the tooltip and message to the marker
+//			.addTo(map) // add the marker to the map`
+//			.openTooltip(); // open the tooltip
+
+//filter the data based on geometry type-----------
+var myRoute = L.geoJson(data, {
+ filter : function(feature) {
+ if(feature.geometry.type =="LineString") {
+ return feature;
+ }
+},
+
+     style : function(feature) {
+    return {
+    color: "#ed4747",
+    weight: 6,
+    opacity: 0.8,
+    dashArray: "1, 8"
+ }
+ }
+ }).addTo(map);
+ 
+ 
+
+
+var myStops = L.geoJson(data, {
+    filter: function(feature) {
+        if (feature.geometry.type == "Point") {
+            return feature;
+        }
+    },
+    // Customize the point style 
+    pointToLayer: function(feature, latlng) {
+        return L.circleMarker(latlng, {
+            radius: 7, 
+            fillColor: "#2711ed", 
+            color: "#0c0263", 
+            weight: 1, 
+            opacity: 1, 
+            fillOpacity: 0.8 
+        });
+    },
+    // Added [Name](in bold) and [desc] of point features. 
+    onEachFeature: function(feature, layer) {
+        var tooltipContent = 
+        "<strong>" + feature.properties['name'] + "</strong><br>" 
+            + feature.properties['desc'];
+        
+        layer.bindTooltip(tooltipContent);
+    }
+})
+
+
+.addTo(map);
+
+//map.fitBounds(myRoute.getBounds());
+
+
+		
+
+
+           
+
+            </script>
+
+</body>
+
+</html>
